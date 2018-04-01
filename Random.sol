@@ -1,20 +1,17 @@
-pragma solidity ^0.4.18;
+pragma solidity ^0.4.21;
 
-contract Random {
-    uint256 _seed;
+library Random {
 
-    // The upper bound of the number returns is 2^bits - 1
-    function bitSlice(uint256 n, uint256 bits, uint256 slot) public pure returns(uint256) {
-        uint256 offset = slot * bits;
-        // mask is made by shifting left an offset number of times
-        uint256 mask = uint256((2**bits) - 1) << offset;
-        // AND n with mask, and trim to max of 5 bits
-        return uint256((n & mask) >> offset);
+    event RandomEvent(uint256 randomNumber);
+
+    //just for test
+    function randomEvent(uint256 upper, uint256 customSeed) public {
+        uint256 rnd = randomWithSeed(upper, customSeed);
+        emit RandomEvent(rnd);
     }
 
-    function maxRandom(uint256 customSeed) public returns (uint256 randomNumber) {
-        _seed = uint256(keccak256(
-                _seed,
+    function maxRandom(uint256 customSeed) internal view returns (uint256 randomNumber) {
+        uint256 _seed = uint256(keccak256(
                 block.blockhash(block.number - 1),
                 block.coinbase,
                 block.difficulty,
@@ -25,15 +22,11 @@ contract Random {
 
     // return a pseudo random number between lower and upper bounds
     // given the number of previous blocks it should hash.
-    function random(uint256 upper) public returns (uint256 randomNumber) {
-        return maxRandom(0) % upper;
+    function random(uint256 upper) internal view returns (uint256 randomNumber) {
+        return maxRandom(0) % upper + 1;
     }
 
-    function randomWithSeed(uint256 upper, uint256 customSeed)  public returns (uint256 randomNumber) {
-        return maxRandom(customSeed) % upper;
-    }
-
-    function randomBool() public returns (bool trueOrFalse){
-        return maxRandom(0) % 2 == 0;
+    function randomWithSeed(uint256 upper, uint256 customSeed)  internal view returns (uint256 randomNumber) {
+        return maxRandom(customSeed) % upper + 1;
     }
 }
